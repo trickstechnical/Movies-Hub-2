@@ -1,5 +1,5 @@
 import { IMG, BASE } from "@/lib/constant";
-import type { MovieCard, Movie } from "@/lib/types";
+import type { MovieCard } from "@/lib/types";
 
 export function img(path: string | null | undefined, size: string) {
   return path ? `${IMG}/${size}${path}` : null;

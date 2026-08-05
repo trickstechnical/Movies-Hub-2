@@ -1,69 +1,161 @@
-import Image from "next/image";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { MovieRow, GenresRow } from "@/components/other";
+import { Reveal } from "@/components/other/Reveal";
+import { fetchBrowse, fetchByGenre } from "@/lib/fetch";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 
-export default function Home() {
+export default async function BrowsePage() {
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey) throw new Error("TMDB_API_KEY is not configured");
+  let data;
+
+  try {
+    data = await fetchBrowse(apiKey);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) notFound();
+    throw error;
+  }
+
+  const queryClient = new QueryClient();
+
+  const genreId = data.genres[0]?.id ?? 28
+
+  const res = await queryClient.prefetchQuery({
+    queryKey: ["genre", genreId],
+    queryFn: () => fetchByGenre(apiKey, genreId),
+  });
+
+  const hero = data.trendingDay[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="relative min-h-screen bg-background text-foreground">
+      <header className="glass-strong fixed inset-x-0 top-0 z-50 py-3">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+          <Link
+            href="/"
+            className="font-display text-xl uppercase tracking-[0.25em]"
+          >
+            Cinema
+          </Link>
+          <ul className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
+            <li>
+              <a
+                href="#trending"
+                className="transition-colors hover:text-foreground"
+              >
+                Trending
+              </a>
+            </li>
+            <li>
+              <a
+                href="#categories"
+                className="transition-colors hover:text-foreground"
+              >
+                Categories
+              </a>
+            </li>
+            <li>
+              <a
+                href="#theaters"
+                className="transition-colors hover:text-foreground"
+              >
+                In Theaters
+              </a>
+            </li>
+          </ul>
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition-transform hover:scale-[1.03]"
+          >
+            Featured Film
+          </Link>
+        </nav>
+      </header>
+
+      <section className="relative isolate overflow-hidden pb-16 pt-36 sm:pb-24 sm:pt-44">
+        {hero?.backdrop && (
+          <img
+            src={hero.backdrop}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40"
+          />
+        )}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/60 via-background/50 to-background" />
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <p className="text-xs uppercase tracking-[0.3em] text-primary">
+            Now on TMDB
+          </p>
+          <h1 className="font-display mt-4 max-w-3xl text-[clamp(2.5rem,7vw,5.5rem)] leading-[0.95] text-glow">
+            Trending &amp; Popular Movies
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-6 max-w-xl text-base text-muted-foreground">
+            Live from TMDB — what the world is watching today, plus every genre
+            worth exploring.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <MovieRow
+        id="trending"
+        eyebrow="Trending Today"
+        title="What's Hot Right Now"
+        movies={data.trendingDay}
+      />
+      <MovieRow
+        eyebrow="Trending This Week"
+        title="The Week's Biggest"
+        movies={data.trendingWeek}
+      />
+      <MovieRow eyebrow="Popular" title="Most Popular" movies={data.popular} />
+
+      <section id="categories" className="py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <Reveal>
+            <p className="text-xs uppercase tracking-[0.3em] text-primary">
+              Categories
+            </p>
+            <h2 className="font-display mt-3 text-3xl sm:text-4xl">
+              Browse by Genre
+            </h2>
+          </Reveal>
+
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <Reveal delay={0.05}>
+              <GenresRow genreID={genreId} genres={data.genres} />
+            </Reveal>
+          </HydrationBoundary>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <MovieRow
+        id="theaters"
+        eyebrow="In Theaters"
+        title="Now Playing"
+        movies={data.nowPlaying}
+      />
+      <MovieRow
+        eyebrow="Top Rated"
+        title="All-Time Greats"
+        movies={data.topRated}
+      />
+      <MovieRow
+        eyebrow="Coming Soon"
+        title="Upcoming Releases"
+        movies={data.upcoming}
+      />
+
+      <footer className="border-t border-white/10 py-10">
+        <div className="mx-auto max-w-7xl px-5 text-xs text-muted-foreground sm:px-8">
+          Data provided by TMDB. This product uses the TMDB API but is not
+          endorsed or certified by TMDB.
+        </div>
+      </footer>
+    </main>
   );
 }

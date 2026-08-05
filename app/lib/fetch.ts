@@ -1,4 +1,5 @@
 import { BASE, CREW_JOBS } from "@/lib/constant";
+import { cache } from "react";
 import { fmtRuntime, fmtDate, img, tmdb, toCard } from "@/lib/helper";
 import { Movie, Provider, BrowseData, MovieCard, Genre } from "@/lib/types";
 
@@ -96,6 +97,10 @@ export async function fetchMovie(apiKey: string, movieId: string): Promise<Movie
     rent: mapProviders(wp?.rent ?? wp?.buy),
   };
 }
+
+export const fetchMovieCached = cache(async function (apiKey: string, movieId: string) {
+  return fetchMovie(apiKey, movieId);
+});
 
 export async function fetchBrowse(apiKey: string): Promise<BrowseData> {
   const [day, week, popular, topRated, nowPlaying, upcoming, genres] = await Promise.all([

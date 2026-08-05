@@ -1,6 +1,39 @@
 import { Nav, Hero, Overview, Cast, Trailer, Reviews, Gallery, Footer } from "@/components/other";
-import { fetchMovie } from "@/lib/fetch";
+import { fetchMovie, fetchMovieCached } from "@/lib/fetch";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({ params }: { params?: any }) {
+  const resolved = await params;
+  const slug = resolved?.slug;
+  const raw = Array.isArray(slug) ? slug[0] : slug;
+  const movieId = raw ? String(raw).match(/^\d+/)?.[0] : undefined;
+
+  if (!movieId) return undefined;
+
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey) throw new Error("TMDB_API_KEY is not configured");
+
+  let movie;
+  try {
+    movie = await fetchMovieCached(apiKey, movieId);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) notFound();
+    throw error;
+  }
+
+  const title = `${movie.title} — Cinema`;
+
+  return {
+    title,
+    description: movie.overview || "",
+    openGraph: {
+      title,
+      description: movie.overview || "",
+      images: movie.poster ? [{ url: movie.poster, alt: movie.title }] : [],
+      type: "video.movie",
+    },
+  };
+}
 
 export default async function MoviePage({
   params,
@@ -17,7 +50,7 @@ export default async function MoviePage({
   let movie;
 
   try {
-    movie = await fetchMovie(apiKey, movieId);
+    movie = await fetchMovieCached(apiKey, movieId);
   } catch (error) {
     if (error instanceof Error && error.message.includes("(404)")) notFound();
     throw error;

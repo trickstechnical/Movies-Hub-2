@@ -1,5 +1,6 @@
 'use client'
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const links = [
@@ -28,9 +29,9 @@ export function Nav({ title }: { title: string }) {
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-        <a href="#top" className="font-display text-xl tracking-[0.25em] text-foreground uppercase">
+        <Link href="/" className="font-display text-xl tracking-[0.25em] text-foreground uppercase">
           {title}
-        </a>
+        </Link>
         <ul className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
           {links.map((l) => (
             <li key={l.href}>

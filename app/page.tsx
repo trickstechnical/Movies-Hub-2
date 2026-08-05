@@ -159,3 +159,15 @@ export default async function BrowsePage() {
     </main>
   );
 }
+
+export const metadata = {
+  title: "Cinema — Trending & Popular Movies",
+  description:
+    "Live from TMDB — Trending, popular, and new release movies across genres.",
+  openGraph: {
+    title: "Cinema — Trending & Popular Movies",
+    description:
+      "Live from TMDB — Trending, popular, and new release movies across genres.",
+    url: "/",
+  },
+};

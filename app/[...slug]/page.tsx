@@ -1,6 +1,28 @@
 import { Nav, Hero, Overview, Cast, Trailer, Reviews, Gallery, Footer } from "@/components/other";
-import { fetchMovie, fetchMovieCached } from "@/lib/fetch";
+import { fetchBrowse, fetchMovieCached } from "@/lib/fetch";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-static";
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey) throw new Error("TMDB_API_KEY is not configured");
+
+  const data = await fetchBrowse(apiKey);
+  const ids = new Set<number>();
+
+  [
+    ...data.trendingDay,
+    ...data.trendingWeek,
+    ...data.popular,
+    ...data.topRated,
+    ...data.nowPlaying,
+    ...data.upcoming,
+  ].forEach((movie) => ids.add(movie.id));
+
+  return Array.from(ids).map((id) => ({ slug: [String(id)] }));
+}
 
 export async function generateMetadata({ params }: { params?: any }) {
   const resolved = await params;

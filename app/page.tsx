@@ -9,6 +9,8 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 
+export const revalidate = 3600;
+
 export default async function BrowsePage() {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) throw new Error("TMDB_API_KEY is not configured");

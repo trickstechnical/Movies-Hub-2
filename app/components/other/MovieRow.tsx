@@ -4,7 +4,8 @@ import Link from "next/link";
 
 export function PosterCard({ movie }: { movie: MovieCard }) {
   return (
-    <article className="group w-[150px] shrink-0 sm:w-[190px]">
+    <article className="group w-[150px] shrink-0 sm:w-[190px] relative">
+      <Link href={`/${movie.id}`} className="absolute inset-0 z-10" aria-label={`View details for ${movie.title}`} />
       <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-surface">
         {movie.poster ? (
           <img
@@ -55,9 +56,7 @@ export function MovieRow({
         <ul className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 sm:px-8 [scrollbar-width:thin]">
           {movies.map((m) => (
             <li key={m.id} className="snap-start">
-              <Link href={`/${m.id}`}>
-                <PosterCard movie={m} />
-              </Link>
+              <PosterCard movie={m} />
             </li>
           ))}
         </ul>
